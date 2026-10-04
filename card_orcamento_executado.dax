@@ -1,0 +1,45 @@
+Card Orçamento Executado = 
+VAR _titulo = "Orçamento executado"
+VAR _valor = SUM ( Lancamentos[Realizado] )
+VAR _meta = SUM ( Lancamentos[Orçado] )
+VAR _pct = DIVIDE ( _valor, _meta, 0 )
+VAR _barra = ROUND ( MIN ( MAX ( _pct, 0 ), 1 ) * 100, 0 )
+VAR _estourou = _pct > 1
+VAR _cor = IF ( _estourou, "#DC2626", "#69BE28" )
+VAR _corTexto = IF ( _estourou, "#B91C1C", "#007E7A" )
+VAR _corFundo = IF ( _estourou, "#FEE2E2", "#EAF6DF" )
+VAR _rodape =
+    IF (
+        _estourou,
+        "Estouro: R$ " & FORMAT ( _valor - _meta, "#,##0" ),
+        "Saldo: R$ " & FORMAT ( _meta - _valor, "#,##0" )
+    )
+RETURN
+"<div style='font-family:Segoe UI,Inter,Arial,sans-serif;background:#FFFFFF;
+  border-radius:16px;padding:20px 22px;margin:10px;
+  box-shadow:0 4px 14px rgba(15,23,42,.10);'>
+  <div style='display:flex;align-items:center;gap:10px;'>
+    <div style='width:36px;height:36px;border-radius:10px;background:" & _corFundo & ";
+      display:flex;align-items:center;justify-content:center;font-size:14px;
+      font-weight:700;color:" & _corTexto & ";'>R$</div>
+    <div style='font-size:13px;font-weight:600;color:#64748B;letter-spacing:.4px;
+      text-transform:uppercase;'>" & _titulo & "</div>
+  </div>
+  <div style='display:flex;align-items:baseline;justify-content:space-between;
+    margin-top:12px;'>
+    <span style='font-size:28px;font-weight:700;color:#0F172A;'>R$ "
+      & FORMAT ( _valor, "#,##0" ) & "</span>
+    <span style='font-size:15px;font-weight:600;color:" & _corTexto & ";'>"
+      & FORMAT ( _pct, "0.0%" ) & "</span>
+  </div>
+  <div style='height:8px;background:#E2E8F0;border-radius:99px;margin-top:14px;
+    overflow:hidden;'>
+    <div style='height:100%;width:" & _barra & "%;background:" & _cor & ";
+      border-radius:99px;'></div>
+  </div>
+  <div style='display:flex;justify-content:space-between;font-size:12px;
+    color:#64748B;margin-top:10px;'>
+    <span>Orçado: R$ " & FORMAT ( _meta, "#,##0" ) & "</span>
+    <span style='color:" & IF ( _estourou, _corTexto, "#64748B" ) & ";'>" & _rodape & "</span>
+  </div>
+</div>"
