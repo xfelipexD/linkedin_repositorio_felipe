@@ -1,0 +1,219 @@
+- conSidebar:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =0
+      Y: =0
+      Width: =If(varMenuCollapsed || App.Width < 768, 76, 264)
+      Height: =Parent.Height
+      Fill: =RGBA(0, 0, 0, 0)
+      DropShadow: =DropShadow.Semilight
+    Children:
+      - htmlSidebarGlass:
+          Control: HtmlViewer@2.1.0
+          Properties:
+            HtmlText: |-
+              ="<div style='height:" & (Parent.Height - 2) & "px; background:rgba(255,255,255,0.80); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-right:1px solid rgba(124,58,237,0.14);'></div>"
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            PaddingTop: =0
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+      - imgSidebarLogo:
+          Control: Image@2.2.3
+          Properties:
+            Image: |-
+              ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#8B5CF6'/><stop offset='1' stop-color='#6D28D9'/></linearGradient></defs><rect width='40' height='40' rx='12' fill='url(#g)'/><path d='M20 10l2.6 7.4L30 20l-7.4 2.6L20 30l-2.6-7.4L10 20l7.4-2.6z' fill='#ffffff'/></svg>")
+            X: =18
+            Y: =20
+            Width: =40
+            Height: =40
+      - lblSidebarTitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="Meu App"
+            X: =70
+            Y: =20
+            Width: =Parent.Width - 86
+            Height: =40
+            Size: =13
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(17, 24, 39, 1)
+            PaddingLeft: =0
+            Visible: =Parent.Width > 100
+      - lblSidebarSection:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="MENU"
+            X: =24
+            Y: =80
+            Width: =Parent.Width - 48
+            Height: =24
+            Size: =8
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(156, 163, 175, 1)
+            PaddingLeft: =0
+            Visible: =Parent.Width > 100
+      - galSidebarMenu:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            Items: |-
+              =AddColumns(
+                  Filter(
+                      Table(
+                          {Id: 1, Pai: 0, HasSub: false, Label: "Início", Icon: "<path d='M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z'/>"},
+                          {Id: 2, Pai: 0, HasSub: false, Label: "Dashboard", Icon: "<rect x='3' y='3' width='7' height='9' rx='1'/><rect x='14' y='3' width='7' height='5' rx='1'/><rect x='14' y='12' width='7' height='9' rx='1'/><rect x='3' y='16' width='7' height='5' rx='1'/>"},
+                          {Id: 3, Pai: 0, HasSub: true, Label: "Registros", Icon: "<path d='M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01'/>"},
+                          {Id: 31, Pai: 3, HasSub: false, Label: "Novo registro", Icon: "<circle cx='12' cy='12' r='3'/>"},
+                          {Id: 32, Pai: 3, HasSub: false, Label: "Consultar", Icon: "<circle cx='12' cy='12' r='3'/>"},
+                          {Id: 33, Pai: 3, HasSub: false, Label: "Pendentes", Icon: "<circle cx='12' cy='12' r='3'/>"},
+                          {Id: 4, Pai: 0, HasSub: false, Label: "Mapa", Icon: "<path d='M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z'/><path d='M9 4v14M15 6v14'/>"},
+                          {Id: 5, Pai: 0, HasSub: true, Label: "Equipe", Icon: "<circle cx='9' cy='8' r='3.5'/><path d='M2.5 20a6.5 6.5 0 0 1 13 0'/><path d='M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8'/>"},
+                          {Id: 51, Pai: 5, HasSub: false, Label: "Colaboradores", Icon: "<circle cx='12' cy='12' r='3'/>"},
+                          {Id: 52, Pai: 5, HasSub: false, Label: "Escalas", Icon: "<circle cx='12' cy='12' r='3'/>"},
+                          {Id: 6, Pai: 0, HasSub: false, Label: "Configurações", Icon: "<path d='M4 6h10M18 6h2M4 12h2M10 12h10M4 18h10M18 18h2'/><circle cx='16' cy='6' r='2'/><circle cx='8' cy='12' r='2'/><circle cx='16' cy='18' r='2'/>"}
+                      ),
+                      Pai = 0 || Pai = varMenuExp
+                  ),
+                  Ativo,
+                  If(Pai = 0, Id = Coalesce(varMenuSel, 1) || Id = varMenuSelPai, Id = varMenuSel)
+              )
+            X: =12
+            Y: =110
+            Width: =Parent.Width - 24
+            Height: =Parent.Height - 110 - 76
+            TemplateSize: =52
+            TemplatePadding: =0
+            ShowScrollbar: =false
+          Children:
+            - htmlItemActive:
+                Control: HtmlViewer@2.1.0
+                Properties:
+                  HtmlText: |-
+                    =If(
+                        ThisItem.Pai = 0,
+                        "<div style='margin:4px 0 0 0; height:40px; border-radius:12px; background:linear-gradient(135deg,#8B5CF6,#6D28D9); box-shadow:0 6px 10px -4px rgba(109,40,217,0.55);'></div>",
+                        "<div style='margin:4px 0 0 0; height:40px; border-radius:12px; background:rgba(124,58,237,0.12);'></div>"
+                    )
+                  X: =0
+                  Y: =0
+                  Width: =Parent.TemplateWidth
+                  Height: =52
+                  PaddingTop: =0
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+                  Visible: =ThisItem.Ativo
+            - imgItemIcon:
+                Control: Image@2.2.3
+                Properties:
+                  Image: |-
+                    ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='" & If(!ThisItem.Ativo, "#6B7280", ThisItem.Pai = 0, "#FFFFFF", "#7C3AED") & "' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'>" & ThisItem.Icon & "</svg>")
+                  X: =If(ThisItem.Pai <> 0 && conSidebar.Width > 100, 28, 16)
+                  Y: =14
+                  Width: =20
+                  Height: =20
+            - lblItemLabel:
+                Control: Label@2.5.1
+                Properties:
+                  Text: =ThisItem.Label
+                  X: =If(ThisItem.Pai <> 0, 58, 48)
+                  Y: =4
+                  Width: =Parent.TemplateWidth - Self.X - 32
+                  Height: =40
+                  Size: =If(ThisItem.Pai <> 0, 10, 11)
+                  FontWeight: =If(ThisItem.Ativo, FontWeight.Semibold, FontWeight.Normal)
+                  Color: =If(!ThisItem.Ativo, RGBA(55, 65, 81, 1), ThisItem.Pai = 0, RGBA(255, 255, 255, 1), RGBA(109, 40, 217, 1))
+                  PaddingLeft: =0
+                  Visible: =conSidebar.Width > 100
+            - imgItemChevron:
+                Control: Image@2.2.3
+                Properties:
+                  Image: |-
+                    ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='" & If(ThisItem.Ativo, "#FFFFFF", "#9CA3AF") & "' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='" & If(varMenuExp = ThisItem.Id, "M6 9l6 6 6-6", "M9 6l6 6-6 6") & "'/></svg>")
+                  X: =Parent.TemplateWidth - 28
+                  Y: =16
+                  Width: =16
+                  Height: =16
+                  Visible: =ThisItem.HasSub && conSidebar.Width > 100
+            - btnItemHover:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: =""
+                  Tooltip: =ThisItem.Label
+                  X: =0
+                  Y: =4
+                  Width: =Parent.TemplateWidth
+                  Height: =40
+                  Fill: =RGBA(0, 0, 0, 0)
+                  HoverFill: =RGBA(124, 58, 237, 0.12)
+                  PressedFill: =RGBA(124, 58, 237, 0.22)
+                  BorderThickness: =0
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  FocusedBorderThickness: =1
+                  FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+                  OnSelect: |-
+                    =If(
+                        ThisItem.HasSub,
+                        Set(varMenuExp, If(varMenuExp = ThisItem.Id, 0, ThisItem.Id)),
+                        Set(varMenuSel, ThisItem.Id); Set(varMenuSelPai, ThisItem.Pai)
+                    )
+      - rectSidebarDivider:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =16
+            Y: =Parent.Height - 68
+            Width: =Parent.Width - 32
+            Height: =1
+            Fill: =RGBA(124, 58, 237, 0.14)
+            BorderThickness: =0
+      - imgToggleIcon:
+          Control: Image@2.2.3
+          Properties:
+            Image: |-
+              ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#7C3AED' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='" & If(Parent.Width > 100, "M15 6l-6 6 6 6", "M9 6l6 6-6 6") & "'/></svg>")
+            X: =28
+            Y: =Parent.Height - 44
+            Width: =20
+            Height: =20
+            Visible: =App.Width >= 768
+      - lblToggle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="Recolher"
+            X: =60
+            Y: =Parent.Height - 54
+            Width: =Parent.Width - 76
+            Height: =40
+            Size: =11
+            Color: =RGBA(124, 58, 237, 1)
+            PaddingLeft: =0
+            Visible: =Parent.Width > 100
+      - btnToggle:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: =If(Parent.Width > 100, "Recolher menu", "Expandir menu")
+            X: =12
+            Y: =Parent.Height - 54
+            Width: =Parent.Width - 24
+            Height: =40
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(124, 58, 237, 0.12)
+            PressedFill: =RGBA(124, 58, 237, 0.22)
+            BorderThickness: =0
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            FocusedBorderThickness: =1
+            FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+            OnSelect: =Set(varMenuCollapsed, !varMenuCollapsed)
+            Visible: =App.Width >= 768
