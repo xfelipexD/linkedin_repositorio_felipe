@@ -1,0 +1,160 @@
+- conModal:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Fill: =RGBA(17, 24, 39, 0.35)
+      Visible: =true
+    Children:
+      - htmlModalOverlay:
+          Control: HtmlViewer@2.1.0
+          Properties:
+            HtmlText: |-
+              ="<div style='height:" & Parent.Height & "px; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);'></div>"
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            PaddingTop: =0
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+      - conModalCard:
+          Control: GroupContainer@1.3.0
+          Variant: ManualLayout
+          Properties:
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =Max(16, (Parent.Height - Self.Height) / 2)
+            Width: =Min(420, Parent.Width - 32)
+            Height: =248
+            Fill: =RGBA(0, 0, 0, 0)
+            DropShadow: =DropShadow.Bold
+            RadiusTopLeft: =20
+            RadiusTopRight: =20
+            RadiusBottomLeft: =20
+            RadiusBottomRight: =20
+          Children:
+            - htmlModalGlass:
+                Control: HtmlViewer@2.1.0
+                Properties:
+                  HtmlText: |-
+                    ="<div style='height:" & (Parent.Height - 2) & "px; border-radius:20px; background:rgba(255,255,255,0.94); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(124,58,237,0.14);'></div>"
+                  X: =0
+                  Y: =0
+                  Width: =Parent.Width
+                  Height: =Parent.Height
+                  PaddingTop: =0
+                  PaddingBottom: =0
+                  PaddingLeft: =0
+                  PaddingRight: =0
+            - imgModalIcon:
+                Control: Image@2.2.3
+                Properties:
+                  Image: |-
+                    ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#8B5CF6'/><stop offset='1' stop-color='#6D28D9'/></linearGradient></defs><rect width='48' height='48' rx='14' fill='url(#g)'/><g transform='translate(12 12)' fill='none' stroke='#ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='9'/><path d='M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01'/></g></svg>")
+                  X: =(Parent.Width - 48) / 2
+                  Y: =28
+                  Width: =48
+                  Height: =48
+            - lblModalTitle:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Confirmar ação"
+                  X: =24
+                  Y: =88
+                  Width: =Parent.Width - 48
+                  Height: =28
+                  Size: =13
+                  FontWeight: =FontWeight.Semibold
+                  Color: =RGBA(17, 24, 39, 1)
+                  Align: =Align.Center
+            - lblModalMsg:
+                Control: Label@2.5.1
+                Properties:
+                  Text: ="Tem certeza de que deseja continuar? Essa ação não poderá ser desfeita."
+                  X: =24
+                  Y: =118
+                  Width: =Parent.Width - 48
+                  Height: =44
+                  Size: =10
+                  Color: =RGBA(107, 114, 128, 1)
+                  Align: =Align.Center
+            - imgModalClose:
+                Control: Image@2.2.3
+                Properties:
+                  Image: |-
+                    ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#9CA3AF' stroke-width='2' stroke-linecap='round'><path d='M6 6l12 12M18 6L6 18'/></svg>")
+                  X: =Parent.Width - 34
+                  Y: =18
+                  Width: =16
+                  Height: =16
+            - btnModalClose:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: =""
+                  Tooltip: ="Fechar"
+                  X: =Parent.Width - 40
+                  Y: =12
+                  Width: =28
+                  Height: =28
+                  Fill: =RGBA(0, 0, 0, 0)
+                  HoverFill: =RGBA(124, 58, 237, 0.12)
+                  PressedFill: =RGBA(124, 58, 237, 0.22)
+                  BorderThickness: =0
+                  FocusedBorderThickness: =1
+                  FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+                  RadiusTopLeft: =8
+                  RadiusTopRight: =8
+                  RadiusBottomLeft: =8
+                  RadiusBottomRight: =8
+                  OnSelect: =false
+            - btnModalCancelar:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="Cancelar"
+                  X: =24
+                  Y: =184
+                  Width: =(Parent.Width - 56) / 2
+                  Height: =40
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Fill: =RGBA(0, 0, 0, 0)
+                  HoverFill: =RGBA(124, 58, 237, 0.08)
+                  PressedFill: =RGBA(124, 58, 237, 0.16)
+                  Color: =RGBA(55, 65, 81, 1)
+                  HoverColor: =RGBA(109, 40, 217, 1)
+                  BorderColor: =RGBA(229, 231, 235, 1)
+                  HoverBorderColor: =RGBA(124, 58, 237, 0.50)
+                  BorderThickness: =1
+                  FocusedBorderThickness: =1
+                  FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  OnSelect: =false
+            - btnModalConfirmar:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="Confirmar"
+                  X: =Parent.Width / 2 + 4
+                  Y: =184
+                  Width: =(Parent.Width - 56) / 2
+                  Height: =40
+                  Size: =10
+                  FontWeight: =FontWeight.Semibold
+                  Fill: =RGBA(124, 58, 237, 1)
+                  HoverFill: =RGBA(109, 40, 217, 1)
+                  PressedFill: =RGBA(91, 33, 182, 1)
+                  Color: =RGBA(255, 255, 255, 1)
+                  BorderThickness: =0
+                  FocusedBorderThickness: =1
+                  FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+                  RadiusTopLeft: =12
+                  RadiusTopRight: =12
+                  RadiusBottomLeft: =12
+                  RadiusBottomRight: =12
+                  OnSelect: =false
