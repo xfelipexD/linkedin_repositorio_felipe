@@ -1,0 +1,219 @@
+- conToast:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =Parent.Width - Self.Width - If(Parent.Width < 768, 16, 24)
+      Y: =24
+      Width: =Min(380, Parent.Width - 32)
+      Height: =84
+      Fill: =RGBA(0, 0, 0, 0)
+      DropShadow: =DropShadow.Semilight
+      RadiusTopLeft: =16
+      RadiusTopRight: =16
+      RadiusBottomLeft: =16
+      RadiusBottomRight: =16
+      Visible: =varToastShow
+    Children:
+      - htmlToastGlass:
+          Control: HtmlViewer@2.1.0
+          Properties:
+            HtmlText: |-
+              ="<div style='height:" & (Parent.Height - 2) & "px; border-radius:16px; background:rgba(255,255,255,0.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(124,58,237,0.14);'></div>"
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            PaddingTop: =0
+            PaddingBottom: =0
+            PaddingLeft: =0
+            PaddingRight: =0
+      - imgToastIcon:
+          Control: Image@2.2.3
+          Properties:
+            Image: |-
+              =With(
+                  {
+                      cor: Switch(varToastTipo, "sucesso", "#10B981", "erro", "#EF4444", "aviso", "#F59E0B", "#7C3AED"),
+                      desenho: Switch(
+                          varToastTipo,
+                          "sucesso", "<path d='M5 12.5l4.5 4.5L19 7.5'/>",
+                          "erro", "<path d='M7 7l10 10M17 7L7 17'/>",
+                          "aviso", "<path d='M12 4 2.5 20h19L12 4z'/><path d='M12 10v4M12 17h.01'/>",
+                          "<circle cx='12' cy='12' r='9'/><path d='M12 11v5M12 8h.01'/>"
+                      )
+                  },
+                  "data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' rx='12' fill='" & cor & "' fill-opacity='0.14'/><g transform='translate(8 8)' fill='none' stroke='" & cor & "' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>" & desenho & "</g></svg>")
+              )
+            X: =16
+            Y: =20
+            Width: =40
+            Height: =40
+      - lblToastTitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: =varToastTitulo
+            X: =68
+            Y: =16
+            Width: =Parent.Width - 68 - 48
+            Height: =24
+            Size: =11
+            FontWeight: =FontWeight.Semibold
+            Color: =RGBA(17, 24, 39, 1)
+            PaddingLeft: =0
+      - lblToastMsg:
+          Control: Label@2.5.1
+          Properties:
+            Text: =varToastMsg
+            X: =68
+            Y: =40
+            Width: =Parent.Width - 68 - 16
+            Height: =24
+            Size: =10
+            Color: =RGBA(107, 114, 128, 1)
+            PaddingLeft: =0
+      - imgToastClose:
+          Control: Image@2.2.3
+          Properties:
+            Image: |-
+              ="data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#9CA3AF' stroke-width='2' stroke-linecap='round'><path d='M6 6l12 12M18 6L6 18'/></svg>")
+            X: =Parent.Width - 34
+            Y: =18
+            Width: =16
+            Height: =16
+      - btnToastClose:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Fechar"
+            X: =Parent.Width - 40
+            Y: =12
+            Width: =28
+            Height: =28
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(124, 58, 237, 0.12)
+            PressedFill: =RGBA(124, 58, 237, 0.22)
+            BorderThickness: =0
+            FocusedBorderThickness: =1
+            FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+            OnSelect: =Set(varToastShow, false)
+      - rectToastBar:
+          Control: Rectangle@2.3.0
+          Properties:
+            X: =0
+            Y: =Parent.Height - 3
+            Width: =Parent.Width * (1 - tmrToast.Value / tmrToast.Duration)
+            Height: =3
+            Fill: =Switch(varToastTipo, "sucesso", RGBA(16, 185, 129, 1), "erro", RGBA(239, 68, 68, 1), "aviso", RGBA(245, 158, 11, 1), RGBA(124, 58, 237, 1))
+            BorderThickness: =0
+      - tmrToast:
+          Control: Timer@2.1.0
+          Properties:
+            Duration: =4000
+            Start: =varToastShow
+            Reset: =!varToastShow
+            AutoStart: =false
+            Repeat: =false
+            Visible: =false
+            OnTimerEnd: =Set(varToastShow, false)
+- conToastDemo:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =24
+      Y: =24
+      Width: =464
+      Height: =40
+      Fill: =RGBA(0, 0, 0, 0)
+    Children:
+      - btnDemoSucesso:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Sucesso"
+            X: =0
+            Y: =0
+            Width: =110
+            Height: =40
+            Size: =10
+            Fill: =RGBA(124, 58, 237, 1)
+            HoverFill: =RGBA(109, 40, 217, 1)
+            PressedFill: =RGBA(91, 33, 182, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            BorderThickness: =0
+            FocusedBorderThickness: =1
+            FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            OnSelect: |-
+              =Set(varToastTipo, "sucesso"); Set(varToastTitulo, "Registro salvo"); Set(varToastMsg, "As alterações foram gravadas."); Set(varToastShow, true)
+      - btnDemoErro:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Erro"
+            X: =118
+            Y: =0
+            Width: =110
+            Height: =40
+            Size: =10
+            Fill: =RGBA(124, 58, 237, 1)
+            HoverFill: =RGBA(109, 40, 217, 1)
+            PressedFill: =RGBA(91, 33, 182, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            BorderThickness: =0
+            FocusedBorderThickness: =1
+            FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            OnSelect: |-
+              =Set(varToastTipo, "erro"); Set(varToastTitulo, "Falha ao enviar"); Set(varToastMsg, "Verifique a conexão e tente de novo."); Set(varToastShow, true)
+      - btnDemoAviso:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Aviso"
+            X: =236
+            Y: =0
+            Width: =110
+            Height: =40
+            Size: =10
+            Fill: =RGBA(124, 58, 237, 1)
+            HoverFill: =RGBA(109, 40, 217, 1)
+            PressedFill: =RGBA(91, 33, 182, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            BorderThickness: =0
+            FocusedBorderThickness: =1
+            FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            OnSelect: |-
+              =Set(varToastTipo, "aviso"); Set(varToastTitulo, "Campos pendentes"); Set(varToastMsg, "Preencha os campos obrigatórios."); Set(varToastShow, true)
+      - btnDemoInfo:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Info"
+            X: =354
+            Y: =0
+            Width: =110
+            Height: =40
+            Size: =10
+            Fill: =RGBA(124, 58, 237, 1)
+            HoverFill: =RGBA(109, 40, 217, 1)
+            PressedFill: =RGBA(91, 33, 182, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            BorderThickness: =0
+            FocusedBorderThickness: =1
+            FocusedBorderColor: =RGBA(124, 58, 237, 0.30)
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            OnSelect: |-
+              =Set(varToastTipo, "info"); Set(varToastTitulo, "Sincronização em andamento"); Set(varToastMsg, "Seus dados estão sendo atualizados."); Set(varToastShow, true)
