@@ -1,0 +1,411 @@
+# ─────────────────────────────────────────────────────────────
+#  Stepper de Status · Power Apps Canvas
+#  5 etapas em escala de roxo (claro → escuro) + exceção "Cancelado"
+#  100% SVG · sem PCF · sem licença premium
+#
+#  Como usar:
+#  1. Copie este bloco inteiro
+#  2. No Power Apps Studio, clique com o botão direito na tela > Colar
+#  3. Controle a etapa com:  Set(varEtapa, 1..5)
+#     Cancele/reabra com:     Set(varCancelado, true/false)
+#  4. Ponha sua gravação (Patch) no OnSelect de btnStepperOnChange
+# ─────────────────────────────────────────────────────────────
+- conStepper:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =40
+      Y: =40
+      Width: =1000
+      Height: =Self.Width * 0.18
+      Fill: =RGBA(0, 0, 0, 0)
+      BorderThickness: =0
+      DropShadow: =DropShadow.None
+    Children:
+      - imgStepper:
+          Control: Image@2.2.3
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            ImagePosition: =ImagePosition.Fit
+            Image: |-
+              =With(
+                  {
+                      etapaAtual: Max(1, Min(5, Coalesce(varEtapa, 1))),
+                      cancelado: Coalesce(varCancelado, false),
+                      // ── PALETA: escala de roxo do claro ao escuro ──
+                      // cor = bolinha e barra · tinta = ícone dentro da bolinha
+                      etapas: Table(
+                          {n: 1, nome: "Não iniciado", cor: "#C4B5FD", tinta: "#2E1065"},
+                          {n: 2, nome: "Em andamento", cor: "#A78BFA", tinta: "#2E1065"},
+                          {n: 3, nome: "Em análise",   cor: "#8B5CF6", tinta: "#FFFFFF"},
+                          {n: 4, nome: "Aprovado",     cor: "#7C3AED", tinta: "#FFFFFF"},
+                          {n: 5, nome: "Concluído",    cor: "#5B21B6", tinta: "#FFFFFF"}
+                      )
+                  },
+                  With(
+                      {
+                          corAtual: LookUp(etapas, n = etapaAtual).cor,
+                          nomeAtual: If(cancelado, "Cancelado", LookUp(etapas, n = etapaAtual).nome),
+                          pct: Text((etapaAtual - 1) * 25, "0"),
+                          xFim: Text(100 + (etapaAtual - 1) * 200, "0")
+                      },
+                      "data:image/svg+xml;utf8," & EncodeUrl(
+                          "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 180' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                          "<defs><linearGradient id='prog' gradientUnits='userSpaceOnUse' x1='100' y1='0' x2='" & If(etapaAtual = 1, "101", xFim) & "' y2='0'><stop offset='0' stop-color='#C4B5FD'/><stop offset='1' stop-color='" & corAtual & "'/></linearGradient></defs>" &
+                          // cartão
+                          "<rect x='1' y='1' width='998' height='176' rx='16' fill='#FFFFFF' stroke='#E7E5EE'/>" &
+                          // selo de status
+                          If(
+                              cancelado,
+                              "<rect x='28' y='22' width='" & Text(46 + Len(nomeAtual) * 7, "0") & "' height='28' rx='14' fill='#FEE2E2'/><circle cx='45' cy='36' r='4.5' fill='#DC2626'/><text x='58' y='40.5' font-size='13' font-weight='600' fill='#B91C1C'>" & nomeAtual & "</text>",
+                              "<rect x='28' y='22' width='" & Text(46 + Len(nomeAtual) * 7, "0") & "' height='28' rx='14' fill='#F3EFFF'/><circle cx='45' cy='36' r='4.5' fill='" & corAtual & "'/><text x='58' y='40.5' font-size='13' font-weight='600' fill='#4C1D95'>" & nomeAtual & "</text>"
+                          ) &
+                          // indicador à direita
+                          "<text x='972' y='40.5' font-size='13' text-anchor='end'>" &
+                          If(
+                              cancelado,
+                              "<tspan fill='#B91C1C' font-weight='600'>Interrompido na etapa " & etapaAtual & " de 5</tspan>",
+                              "<tspan fill='#6E6A80'>Etapa " & etapaAtual & " de 5  ·  </tspan><tspan fill='#4C1D95' font-weight='700'>" & pct & "%</tspan>"
+                          ) & "</text>" &
+                          // trilho e progresso
+                          "<line x1='100' y1='96' x2='900' y2='96' stroke='#EEECF3' stroke-width='4' stroke-linecap='round'/>" &
+                          If(etapaAtual > 1, "<line x1='100' y1='96' x2='" & xFim & "' y2='96' stroke='url(#prog)' stroke-width='4' stroke-linecap='round'/>", "") &
+                          // etapas
+                          Concat(
+                              etapas,
+                              "<g transform='translate(" & Text(100 + (n - 1) * 200, "0") & " 96)'>" &
+                              If(
+                                  // atual + cancelado
+                                  cancelado && n = etapaAtual,
+                                      "<circle r='24' fill='#DC2626' fill-opacity='.12'/>" &
+                                      "<circle r='16' fill='#DC2626'/>" &
+                                      "<path d='M-4.5 -4.5 L4.5 4.5 M4.5 -4.5 L-4.5 4.5' stroke='#FFFFFF' stroke-width='2.4' stroke-linecap='round'/>" &
+                                      "<text y='40' font-size='13' font-weight='700' text-anchor='middle' fill='#1F1B2D'>" & nome & "</text>" &
+                                      "<text y='58' font-size='11' text-anchor='middle' fill='#B91C1C'>Cancelada aqui</text>",
+                                  // atual na última etapa = fluxo concluído
+                                  n = etapaAtual && n = 5,
+                                      "<circle r='24' fill='" & cor & "' fill-opacity='.14'/>" &
+                                      "<circle r='16' fill='" & cor & "'/>" &
+                                      "<path d='M-5.5 0.5 L-1.8 4.2 L5.5 -3.2' fill='none' stroke='" & tinta & "' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/>" &
+                                      "<text y='40' font-size='13' font-weight='700' text-anchor='middle' fill='#1F1B2D'>" & nome & "</text>" &
+                                      "<text y='58' font-size='11' text-anchor='middle' fill='#4C1D95'>Finalizado</text>",
+                                  // atual
+                                  n = etapaAtual,
+                                      "<circle r='24' fill='" & cor & "' fill-opacity='.18'/>" &
+                                      "<circle r='16' fill='" & cor & "'/>" &
+                                      "<text y='4.5' font-size='13' font-weight='700' text-anchor='middle' fill='" & tinta & "'>" & n & "</text>" &
+                                      "<text y='40' font-size='13' font-weight='700' text-anchor='middle' fill='#1F1B2D'>" & nome & "</text>" &
+                                      "<text y='58' font-size='11' text-anchor='middle' fill='#4C1D95'>Etapa atual</text>",
+                                  // concluídas
+                                  n < etapaAtual,
+                                      "<circle r='16' fill='" & cor & "'/>" &
+                                      "<path d='M-5.5 0.5 L-1.8 4.2 L5.5 -3.2' fill='none' stroke='" & tinta & "' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/>" &
+                                      "<text y='40' font-size='13' font-weight='600' text-anchor='middle' fill='#3F3B4F'>" & nome & "</text>" &
+                                      "<text y='58' font-size='11' text-anchor='middle' fill='#8A8699'>Concluída</text>",
+                                  // pendentes
+                                  "<g opacity='" & If(cancelado, ".5", "1") & "'>" &
+                                      "<circle r='15' fill='#FFFFFF' stroke='#D4D0E0' stroke-width='2'/>" &
+                                      "<text y='4.5' font-size='13' font-weight='600' text-anchor='middle' fill='#6E6A80'>" & n & "</text>" &
+                                      "<text y='40' font-size='13' font-weight='500' text-anchor='middle' fill='#6E6A80'>" & nome & "</text>" &
+                                      "<text y='58' font-size='11' text-anchor='middle' fill='#A19DB0'>Pendente</text>" &
+                                  "</g>"
+                              ) &
+                              "</g>"
+                          ) &
+                          "</svg>"
+                      )
+                  )
+              )
+      # ── Zonas de clique (uma por etapa) ──
+      - btnStepperEtapa1:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Ir para → Não iniciado"
+            X: =Parent.Width * 0.0
+            Y: =Parent.Height * 0.32
+            Width: =Parent.Width * 0.2
+            Height: =Parent.Height * 0.64
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(91, 33, 182, 0.03)
+            PressedFill: =RGBA(91, 33, 182, 0.06)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            DisplayMode: =If(Coalesce(varCancelado, false), DisplayMode.View, DisplayMode.Edit)
+            OnSelect: =Set(varEtapa, 1); Select(btnStepperOnChange)
+      - btnStepperEtapa2:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Ir para → Em andamento"
+            X: =Parent.Width * 0.2
+            Y: =Parent.Height * 0.32
+            Width: =Parent.Width * 0.2
+            Height: =Parent.Height * 0.64
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(91, 33, 182, 0.03)
+            PressedFill: =RGBA(91, 33, 182, 0.06)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            DisplayMode: =If(Coalesce(varCancelado, false), DisplayMode.View, DisplayMode.Edit)
+            OnSelect: =Set(varEtapa, 2); Select(btnStepperOnChange)
+      - btnStepperEtapa3:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Ir para → Em análise"
+            X: =Parent.Width * 0.4
+            Y: =Parent.Height * 0.32
+            Width: =Parent.Width * 0.2
+            Height: =Parent.Height * 0.64
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(91, 33, 182, 0.03)
+            PressedFill: =RGBA(91, 33, 182, 0.06)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            DisplayMode: =If(Coalesce(varCancelado, false), DisplayMode.View, DisplayMode.Edit)
+            OnSelect: =Set(varEtapa, 3); Select(btnStepperOnChange)
+      - btnStepperEtapa4:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Ir para → Aprovado"
+            X: =Parent.Width * 0.6
+            Y: =Parent.Height * 0.32
+            Width: =Parent.Width * 0.2
+            Height: =Parent.Height * 0.64
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(91, 33, 182, 0.03)
+            PressedFill: =RGBA(91, 33, 182, 0.06)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            DisplayMode: =If(Coalesce(varCancelado, false), DisplayMode.View, DisplayMode.Edit)
+            OnSelect: =Set(varEtapa, 4); Select(btnStepperOnChange)
+      - btnStepperEtapa5:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Ir para → Concluído"
+            X: =Parent.Width * 0.8
+            Y: =Parent.Height * 0.32
+            Width: =Parent.Width * 0.2
+            Height: =Parent.Height * 0.64
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(91, 33, 182, 0.03)
+            PressedFill: =RGBA(91, 33, 182, 0.06)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            DisplayMode: =If(Coalesce(varCancelado, false), DisplayMode.View, DisplayMode.Edit)
+            OnSelect: =Set(varEtapa, 5); Select(btnStepperOnChange)
+      # ── Evento OnChange: coloque aqui sua gravação ──
+      - btnStepperOnChange:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="OnChange"
+            Visible: =false
+            OnSelect: |-
+              =// Disparado sempre que a etapa muda.
+              // Exemplo SharePoint/Dataverse:
+              // Patch(Projetos, galProjetos.Selected, {Etapa: varEtapa, Cancelado: varCancelado})
+              Notify("Etapa alterada: " & varEtapa, NotificationType.Information)
+
+# ─────────────────────────────────────────────────────────────
+#  OPCIONAL · Ações (Voltar / Avançar / Cancelar) com ícones SVG
+#  Cada botão = imagem SVG (visual) + botão transparente por cima (clique)
+#  Cole separado. Útil para testar e gravar o GIF do post.
+# ─────────────────────────────────────────────────────────────
+- conStepperAcoes:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =40
+      Y: =240
+      Width: =440
+      Height: =40
+      Fill: =RGBA(0, 0, 0, 0)
+      BorderThickness: =0
+      DropShadow: =DropShadow.None
+    Children:
+      # ── Voltar ──
+      - imgStepperVoltar:
+          Control: Image@2.2.3
+          Properties:
+            X: =0
+            Y: =0
+            Width: =120
+            Height: =40
+            ImagePosition: =ImagePosition.Fill
+            Image: |-
+              =With(
+                  {off: Coalesce(varCancelado, false) || Coalesce(varEtapa, 1) <= 1},
+                  With(
+                      {fg: If(off, "#A19DB0", "#4C1D95")},
+                      "data:image/svg+xml;utf8," & EncodeUrl(
+                          "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                          "<rect x='0.5' y='0.5' width='119' height='39' rx='10' fill='" & If(off, "#FAF9FC", "#FFFFFF") & "' stroke='" & If(off, "#ECEAF2", "#D4D0E0") & "'/>" &
+                          "<path d='M39 20 H27 M32 15 L27 20 L32 25' fill='none' stroke='" & fg & "' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>" &
+                          "<text x='47' y='25' font-size='14' font-weight='600' fill='" & fg & "'>Voltar</text>" &
+                          "</svg>"
+                      )
+                  )
+              )
+      - btnStepperVoltar:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Voltar uma etapa"
+            X: =0
+            Y: =0
+            Width: =120
+            Height: =40
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(76, 29, 149, 0.05)
+            PressedFill: =RGBA(76, 29, 149, 0.10)
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =1
+            FocusedBorderColor: =RGBA(196, 181, 253, 1)
+            RadiusTopLeft: =10
+            RadiusTopRight: =10
+            RadiusBottomLeft: =10
+            RadiusBottomRight: =10
+            DisplayMode: =If(Coalesce(varCancelado, false) || Coalesce(varEtapa, 1) <= 1, DisplayMode.Disabled, DisplayMode.Edit)
+            OnSelect: =Set(varEtapa, Max(1, Coalesce(varEtapa, 1) - 1)); Select(btnStepperOnChange)
+      # ── Avançar etapa ──
+      - imgStepperAvancar:
+          Control: Image@2.2.3
+          Properties:
+            X: =130
+            Y: =0
+            Width: =170
+            Height: =40
+            ImagePosition: =ImagePosition.Fill
+            Image: |-
+              =With(
+                  {off: Coalesce(varCancelado, false) || Coalesce(varEtapa, 1) >= 5},
+                  "data:image/svg+xml;utf8," & EncodeUrl(
+                      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 170 40' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                      "<rect width='170' height='40' rx='10' fill='" & If(off, "#DDD6FE", "#5B21B6") & "'/>" &
+                      "<text x='27' y='25' font-size='14' font-weight='600' fill='#FFFFFF'>Avançar etapa</text>" &
+                      "<path d='M131 20 H143 M138 15 L143 20 L138 25' fill='none' stroke='#FFFFFF' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>" &
+                      "</svg>"
+                  )
+              )
+      - btnStepperAvancar:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Avançar para a próxima etapa"
+            X: =130
+            Y: =0
+            Width: =170
+            Height: =40
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(20, 0, 50, 0.14)
+            PressedFill: =RGBA(20, 0, 50, 0.24)
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =1
+            FocusedBorderColor: =RGBA(196, 181, 253, 1)
+            RadiusTopLeft: =10
+            RadiusTopRight: =10
+            RadiusBottomLeft: =10
+            RadiusBottomRight: =10
+            DisplayMode: =If(Coalesce(varCancelado, false) || Coalesce(varEtapa, 1) >= 5, DisplayMode.Disabled, DisplayMode.Edit)
+            OnSelect: =Set(varEtapa, Min(5, Coalesce(varEtapa, 1) + 1)); Select(btnStepperOnChange)
+      # ── Cancelar / Reabrir ──
+      - imgStepperCancelar:
+          Control: Image@2.2.3
+          Properties:
+            X: =310
+            Y: =0
+            Width: =130
+            Height: =40
+            ImagePosition: =ImagePosition.Fill
+            Image: |-
+              =If(
+                  Coalesce(varCancelado, false),
+                  "data:image/svg+xml;utf8," & EncodeUrl(
+                      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 130 40' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                      "<rect width='130' height='40' rx='10' fill='#F3EFFF'/>" &
+                      "<path d='M26.5 20 A6.5 6.5 0 1 0 28.4 15.4' fill='none' stroke='#4C1D95' stroke-width='1.8' stroke-linecap='round'/>" &
+                      "<path d='M28.6 11.8 V15.6 H24.8' fill='none' stroke='#4C1D95' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>" &
+                      "<text x='45' y='25' font-size='14' font-weight='600' fill='#4C1D95'>Reabrir</text>" &
+                      "</svg>"
+                  ),
+                  "data:image/svg+xml;utf8," & EncodeUrl(
+                      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 130 40' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                      "<rect width='130' height='40' rx='10' fill='#FEF2F2'/>" &
+                      "<circle cx='32' cy='20' r='7' fill='none' stroke='#B91C1C' stroke-width='1.8'/>" &
+                      "<path d='M29.5 17.5 L34.5 22.5 M34.5 17.5 L29.5 22.5' stroke='#B91C1C' stroke-width='1.8' stroke-linecap='round'/>" &
+                      "<text x='47' y='25' font-size='14' font-weight='600' fill='#B91C1C'>Cancelar</text>" &
+                      "</svg>"
+                  )
+              )
+      - btnStepperCancelar:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: =If(Coalesce(varCancelado, false), "Reabrir o fluxo", "Cancelar o fluxo nesta etapa")
+            X: =310
+            Y: =0
+            Width: =130
+            Height: =40
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =If(Coalesce(varCancelado, false), RGBA(76, 29, 149, 0.06), RGBA(185, 28, 28, 0.06))
+            PressedFill: =If(Coalesce(varCancelado, false), RGBA(76, 29, 149, 0.12), RGBA(185, 28, 28, 0.12))
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =1
+            FocusedBorderColor: =If(Coalesce(varCancelado, false), RGBA(196, 181, 253, 1), RGBA(252, 165, 165, 1))
+            RadiusTopLeft: =10
+            RadiusTopRight: =10
+            RadiusBottomLeft: =10
+            RadiusBottomRight: =10
+            OnSelect: =Set(varCancelado, !Coalesce(varCancelado, false)); Select(btnStepperOnChange)
