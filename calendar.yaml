@@ -1,0 +1,478 @@
+# ─────────────────────────────────────────────────────────────
+#  Seletor de Datas · Power Apps Canvas
+#  Período (início e fim) ou data única · atalhos · 100% SVG
+#  Sem PCF · sem licença premium
+#
+#  Como usar:
+#  1. Copie este bloco inteiro
+#  2. No Power Apps Studio, clique com o botão direito na tela > Colar
+#  3. Vêm 2 contêineres: conSeletorData (campo) e conDataPainel (calendário).
+#     Deixe conDataPainel no topo da árvore, acima de tudo.
+#     Para mover, mude só X e Y de conSeletorData: o painel acompanha.
+#  4. Datas escolhidas:  varDataIni  e  varDataFim
+#  5. Ponha sua lógica (filtro, Patch) no OnSelect de btnDataOnChange
+# ─────────────────────────────────────────────────────────────
+- conSeletorData:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =40
+      Y: =40
+      Width: =372
+      Height: =56
+      Fill: =RGBA(0, 0, 0, 0)
+      BorderThickness: =0
+      DropShadow: =DropShadow.None
+    Children:
+      # ── Campo ──
+      - imgDataCampo:
+          Control: Image@2.2.3
+          Properties:
+            X: =16
+            Y: =0
+            Width: =340
+            Height: =56
+            ImagePosition: =ImagePosition.Fit
+            Image: |-
+              =With(
+                  {
+                      aberto: Coalesce(varDataAberto, false),
+                      i: If(Coalesce(varDataAberto, false), varDataIniTmp, varDataIni),
+                      f: If(Coalesce(varDataAberto, false), varDataFimTmp, varDataFim)
+                  },
+                  With(
+                      {
+                          valor: If(
+                              IsBlank(i), "Selecione um período",
+                              IsBlank(f), Text(i, "dd/mm/yyyy") & If(aberto, "  →  escolha o fim", ""),
+                              f = i, Text(i, "dd/mm/yyyy"),
+                              Text(i, "dd/mm/yyyy") & "  –  " & Text(f, "dd/mm/yyyy")
+                          ),
+                          dias: If(IsBlank(i) || IsBlank(f), 0, DateDiff(i, f, TimeUnit.Days) + 1)
+                      },
+                      With(
+                          {
+                              pilula: If(dias = 1, "1 dia", dias & " dias")
+                          },
+                          "data:image/svg+xml;utf8," & EncodeUrl(
+                              "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 56' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                              If(aberto, "<rect x='1' y='1' width='338' height='54' rx='14' fill='none' stroke='#00807C' stroke-opacity='.18' stroke-width='2'/>", "") &
+                              "<rect x='3' y='3' width='334' height='50' rx='11' fill='#FFFFFF' stroke='" & If(aberto, "#00807C", "#D5DBDB") & "' stroke-width='" & If(aberto, "1.5", "1") & "'/>" &
+                              // ícone calendário
+                              "<g fill='none' stroke='#00807C' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><rect x='18' y='20' width='17' height='16' rx='3'/><path d='M18 25.5 H35 M22.5 17.5 V22 M30.5 17.5 V22'/></g>" &
+                              "<text x='48' y='23' font-size='10' font-weight='700' letter-spacing='.8' fill='#77787B'>PERÍODO</text>" &
+                              "<text x='48' y='41' font-size='14' font-weight='600' fill='" & If(IsBlank(i), "#7C8282", "#1F2A2A") & "'>" & valor & "</text>" &
+                              // pílula com a quantidade de dias
+                              If(
+                                  dias > 1,
+                                  "<rect x='" & Text(300 - (20 + Len(pilula) * 6.5), "0") & "' y='18' width='" & Text(20 + Len(pilula) * 6.5, "0") & "' height='20' rx='10' fill='#FDF2DC'/>" &
+                                  "<text x='" & Text(300 - (20 + Len(pilula) * 6.5) / 2, "0") & "' y='32' font-size='11' font-weight='700' text-anchor='middle' fill='#7A4F00'>" & pilula & "</text>",
+                                  ""
+                              ) &
+                              // seta
+                              "<path d='" & If(aberto, "M312 31 L318 25 L324 31", "M312 25 L318 31 L324 25") & "' fill='none' stroke='#5C6262' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>" &
+                              "</svg>"
+                          )
+                      )
+                  )
+              )
+      - btnDataCampo:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Escolher período"
+            X: =16
+            Y: =0
+            Width: =340
+            Height: =56
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 128, 124, 0.03)
+            PressedFill: =RGBA(0, 128, 124, 0.07)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =12
+            RadiusTopRight: =12
+            RadiusBottomLeft: =12
+            RadiusBottomRight: =12
+            OnSelect: |-
+              =If(
+                  Coalesce(varDataAberto, false),
+                  // fecha sem aplicar
+                  Set(varDataAberto, false),
+                  // abre com a seleção atual
+                  Set(varDataIniTmp, varDataIni);
+                  Set(varDataFimTmp, varDataFim);
+                  Set(varDataMes, Date(Year(Coalesce(varDataIni, Today())), Month(Coalesce(varDataIni, Today())), 1));
+                  Set(varDataAberto, true)
+              )
+      # ── Evento OnChange: coloque aqui sua lógica ──
+      - btnDataOnChange:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="OnChange"
+            Visible: =false
+            OnSelect: |-
+              =// Disparado ao clicar em Aplicar.
+              // Exemplo de filtro na galeria:
+              // Filter(Solicitacoes, DataAbertura >= varDataIni && DataAbertura <= varDataFim)
+              Notify(
+                  If(
+                      IsBlank(varDataIni), "Período limpo",
+                      varDataIni = varDataFim, "Data: " & Text(varDataIni, "dd/mm/yyyy"),
+                      "Período: " & Text(varDataIni, "dd/mm/yyyy") & " a " & Text(varDataFim, "dd/mm/yyyy")
+                  ),
+                  NotificationType.Information
+              )
+
+# ─────────────────────────────────────────────────────────────
+#  Painel do calendário (contêiner próprio, abre logo abaixo do campo)
+#  Mantenha-o ACIMA de conSeletorData na árvore de controles
+# ─────────────────────────────────────────────────────────────
+- conDataPainel:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =conSeletorData.X
+      Y: =conSeletorData.Y + 48
+      Width: =372
+      Height: =492
+      Visible: =Coalesce(varDataAberto, false)
+      Fill: =RGBA(0, 0, 0, 0)
+      BorderThickness: =0
+      DropShadow: =DropShadow.None
+    Children:
+      - imgDataPainel:
+          Control: Image@2.2.3
+          Properties:
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            ImagePosition: =ImagePosition.Fit
+            Image: |-
+              =With(
+                  {
+                      mes: Coalesce(varDataMes, Date(Year(Today()), Month(Today()), 1)),
+                      ini: varDataIniTmp,
+                      fim: varDataFimTmp,
+                      hoje: Today()
+                  },
+                  With(
+                      {
+                          titulo: Text(mes, "mmmm yyyy", "pt-BR"),
+                          temFaixa: !IsBlank(ini) && !IsBlank(fim) && fim > ini,
+                          // ── atalhos ──
+                          atalhos: Table(
+                              {x: 16,  w: 56, t: "Hoje",     a: ini = hoje && Coalesce(fim, hoje) = hoje},
+                              {x: 80,  w: 64, t: "7 dias",   a: ini = DateAdd(hoje, -6, TimeUnit.Days) && fim = hoje},
+                              {x: 152, w: 72, t: "30 dias",  a: ini = DateAdd(hoje, -29, TimeUnit.Days) && fim = hoje},
+                              {x: 232, w: 92, t: "Este mês", a: ini = Date(Year(hoje), Month(hoje), 1) && fim = hoje && Day(hoje) > 1}
+                          )
+                      },
+                      "data:image/svg+xml;utf8," & EncodeUrl(
+                          "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 372 492' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                          "<defs><filter id='sh' x='-10%' y='-10%' width='120%' height='125%'><feDropShadow dx='0' dy='4' stdDeviation='6' flood-color='#0B3B3A' flood-opacity='.12'/></filter></defs>" &
+                          "<g transform='translate(16 16)'>" &
+                          "<rect width='340' height='452' rx='16' fill='#FFFFFF' stroke='#E3E8E8' filter='url(#sh)'/>" &
+                          // cabeçalho: mês e setas
+                          "<text x='16' y='38' font-size='17' font-weight='700' fill='#1F2A2A'>" & Upper(Left(titulo, 1)) & Mid(titulo, 2) & "</text>" &
+                          "<rect x='252' y='14' width='36' height='36' rx='10' fill='#F2F6F6'/>" &
+                          "<path d='M273 26 L267 32 L273 38' fill='none' stroke='#1F2A2A' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>" &
+                          "<rect x='292' y='14' width='36' height='36' rx='10' fill='#F2F6F6'/>" &
+                          "<path d='M307 26 L313 32 L307 38' fill='none' stroke='#1F2A2A' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>" &
+                          // dias da semana
+                          Concat(
+                              Sequence(7),
+                              "<text x='" & Text(38 + 44 * (Value - 1), "0") & "' y='76' font-size='12' font-weight='600' text-anchor='middle' fill='#77787B'>" & Mid("DSTQQSS", Value, 1) & "</text>"
+                          ) &
+                          // grade de dias (6 semanas)
+                          Concat(
+                              Sequence(42),
+                              With(
+                                  {
+                                      d: DateAdd(mes, Value - Weekday(mes), TimeUnit.Days),
+                                      x0: 16 + 44 * Mod(Value - 1, 7),
+                                      y0: 88 + 40 * RoundDown((Value - 1) / 7, 0)
+                                  },
+                                  With(
+                                      {
+                                          sel: (!IsBlank(ini) && d = ini) || (!IsBlank(fim) && d = fim),
+                                          meio: temFaixa && d > ini && d < fim,
+                                          dentro: Month(d) = Month(mes)
+                                      },
+                                      If(meio, "<rect x='" & x0 & "' y='" & (y0 + 4) & "' width='44' height='32' fill='#E6F2F2'/>", "") &
+                                      If(temFaixa && d = ini, "<rect x='" & (x0 + 22) & "' y='" & (y0 + 4) & "' width='22' height='32' fill='#E6F2F2'/>", "") &
+                                      If(temFaixa && d = fim, "<rect x='" & x0 & "' y='" & (y0 + 4) & "' width='22' height='32' fill='#E6F2F2'/>", "") &
+                                      If(sel, "<circle cx='" & (x0 + 22) & "' cy='" & (y0 + 20) & "' r='17' fill='#00807C'/>", "") &
+                                      "<text x='" & (x0 + 22) & "' y='" & (y0 + 25) & "' font-size='13.5' text-anchor='middle' font-weight='" &
+                                          If(sel || d = hoje, "700", meio, "600", "500") & "' fill='" &
+                                          If(sel, "#FFFFFF", meio, "#005B58", dentro, "#1F2A2A", "#B4B8B8") & "'>" & Day(d) & "</text>" &
+                                      If(d = hoje, "<circle cx='" & (x0 + 22) & "' cy='" & (y0 + 33) & "' r='2.2' fill='#EEA722'/>", "")
+                                  )
+                              )
+                          ) &
+                          // atalhos
+                          "<line x1='16' y1='344' x2='324' y2='344' stroke='#EEF1F1'/>" &
+                          Concat(
+                              atalhos,
+                              "<rect x='" & x & "' y='356' width='" & w & "' height='28' rx='14' fill='" & If(a, "#00807C", "#FFFFFF") & "' stroke='" & If(a, "#00807C", "#D5DBDB") & "'/>" &
+                              "<text x='" & (x + w / 2) & "' y='374.5' font-size='12.5' font-weight='600' text-anchor='middle' fill='" & If(a, "#FFFFFF", "#2E3A3A") & "'>" & t & "</text>"
+                          ) &
+                          // rodapé: Limpar e Aplicar
+                          "<text x='56' y='423' font-size='14' font-weight='600' text-anchor='middle' fill='" & If(IsBlank(ini), "#A9AEAE", "#005B58") & "'>Limpar</text>" &
+                          "<rect x='196' y='400' width='128' height='36' rx='10' fill='" & "#00807C" & "'/>" &
+                          "<path d='M228 418 L232.5 422.5 L240.5 414.5' fill='none' stroke='#FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/>" &
+                          "<text x='248' y='423' font-size='14' font-weight='600' fill='#FFFFFF'>Aplicar</text>" &
+                          "</g></svg>"
+                      )
+                  )
+              )
+      # ── Setas de mês ──
+      - btnDataMesAnterior:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Mês anterior"
+            X: =268
+            Y: =30
+            Width: =36
+            Height: =36
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 128, 124, 0.10)
+            PressedFill: =RGBA(0, 128, 124, 0.18)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =10
+            RadiusTopRight: =10
+            RadiusBottomLeft: =10
+            RadiusBottomRight: =10
+            OnSelect: =Set(varDataMes, DateAdd(Coalesce(varDataMes, Date(Year(Today()), Month(Today()), 1)), -1, TimeUnit.Months))
+      - btnDataMesProximo:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Próximo mês"
+            X: =308
+            Y: =30
+            Width: =36
+            Height: =36
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 128, 124, 0.10)
+            PressedFill: =RGBA(0, 128, 124, 0.18)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =10
+            RadiusTopRight: =10
+            RadiusBottomLeft: =10
+            RadiusBottomRight: =10
+            OnSelect: =Set(varDataMes, DateAdd(Coalesce(varDataMes, Date(Year(Today()), Month(Today()), 1)), 1, TimeUnit.Months))
+      # ── Grade clicável (42 dias) ──
+      - galDataDias:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =32
+            Y: =104
+            Width: =308
+            Height: =240
+            WrapCount: =7
+            TemplateSize: =40
+            TemplatePadding: =0
+            ShowScrollbar: =false
+            ShowNavigation: =false
+            BorderThickness: =0
+            Fill: =RGBA(0, 0, 0, 0)
+            TemplateFill: =RGBA(0, 0, 0, 0)
+            Items: |-
+              =With(
+                  {mes: Coalesce(varDataMes, Date(Year(Today()), Month(Today()), 1))},
+                  ForAll(Sequence(42), {Data: DateAdd(mes, Value - Weekday(mes), TimeUnit.Days)})
+              )
+          Children:
+            - btnDataDia:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: =""
+                  Tooltip: =Text(ThisItem.Data, "dddd, dd/mm/yyyy", "pt-BR")
+                  X: =2
+                  Y: =2
+                  Width: =Parent.TemplateWidth - 4
+                  Height: =Parent.TemplateHeight - 4
+                  Fill: =RGBA(0, 0, 0, 0)
+                  HoverFill: =RGBA(0, 128, 124, 0.08)
+                  PressedFill: =RGBA(0, 128, 124, 0.16)
+                  BorderThickness: =0
+                  BorderColor: =RGBA(0, 0, 0, 0)
+                  HoverBorderColor: =RGBA(0, 0, 0, 0)
+                  PressedBorderColor: =RGBA(0, 0, 0, 0)
+                  FocusedBorderThickness: =0
+                  RadiusTopLeft: =18
+                  RadiusTopRight: =18
+                  RadiusBottomLeft: =18
+                  RadiusBottomRight: =18
+                  OnSelect: |-
+                    =If(
+                        // 1º clique (ou recomeço): define o início
+                        IsBlank(varDataIniTmp) || !IsBlank(varDataFimTmp),
+                            Set(varDataIniTmp, ThisItem.Data); Set(varDataFimTmp, Blank()),
+                        // clicou antes do início: troca o início
+                        ThisItem.Data < varDataIniTmp,
+                            Set(varDataIniTmp, ThisItem.Data),
+                        // 2º clique: define o fim
+                        Set(varDataFimTmp, ThisItem.Data)
+                    );
+                    // dia de outro mês: navega até ele
+                    If(
+                        Month(ThisItem.Data) <> Month(Coalesce(varDataMes, Today())),
+                        Set(varDataMes, Date(Year(ThisItem.Data), Month(ThisItem.Data), 1))
+                    )
+      # ── Atalhos ──
+      - btnDataAtalhoHoje:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Hoje"
+            X: =32
+            Y: =372
+            Width: =56
+            Height: =28
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 128, 124, 0.08)
+            PressedFill: =RGBA(0, 128, 124, 0.16)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =14
+            RadiusTopRight: =14
+            RadiusBottomLeft: =14
+            RadiusBottomRight: =14
+            OnSelect: =Set(varDataIniTmp, Today()); Set(varDataFimTmp, Today()); Set(varDataMes, Date(Year(Today()), Month(Today()), 1))
+      - btnDataAtalho7:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Últimos 7 dias"
+            X: =96
+            Y: =372
+            Width: =64
+            Height: =28
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 128, 124, 0.08)
+            PressedFill: =RGBA(0, 128, 124, 0.16)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =14
+            RadiusTopRight: =14
+            RadiusBottomLeft: =14
+            RadiusBottomRight: =14
+            OnSelect: =Set(varDataIniTmp, DateAdd(Today(), -6, TimeUnit.Days)); Set(varDataFimTmp, Today()); Set(varDataMes, Date(Year(Today()), Month(Today()), 1))
+      - btnDataAtalho30:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Últimos 30 dias"
+            X: =168
+            Y: =372
+            Width: =72
+            Height: =28
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 128, 124, 0.08)
+            PressedFill: =RGBA(0, 128, 124, 0.16)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =14
+            RadiusTopRight: =14
+            RadiusBottomLeft: =14
+            RadiusBottomRight: =14
+            OnSelect: =Set(varDataIniTmp, DateAdd(Today(), -29, TimeUnit.Days)); Set(varDataFimTmp, Today()); Set(varDataMes, Date(Year(Today()), Month(Today()), 1))
+      - btnDataAtalhoMes:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Do dia 1 até hoje"
+            X: =248
+            Y: =372
+            Width: =92
+            Height: =28
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 128, 124, 0.08)
+            PressedFill: =RGBA(0, 128, 124, 0.16)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =14
+            RadiusTopRight: =14
+            RadiusBottomLeft: =14
+            RadiusBottomRight: =14
+            OnSelect: =Set(varDataIniTmp, Date(Year(Today()), Month(Today()), 1)); Set(varDataFimTmp, Today()); Set(varDataMes, Date(Year(Today()), Month(Today()), 1))
+      # ── Rodapé ──
+      - btnDataLimpar:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Limpar seleção"
+            X: =32
+            Y: =416
+            Width: =80
+            Height: =36
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 128, 124, 0.07)
+            PressedFill: =RGBA(0, 128, 124, 0.14)
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =10
+            RadiusTopRight: =10
+            RadiusBottomLeft: =10
+            RadiusBottomRight: =10
+            DisplayMode: =If(IsBlank(varDataIniTmp), DisplayMode.Disabled, DisplayMode.Edit)
+            OnSelect: =Set(varDataIniTmp, Blank()); Set(varDataFimTmp, Blank())
+      - btnDataAplicar:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Aplicar período"
+            X: =212
+            Y: =416
+            Width: =128
+            Height: =36
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 40, 38, 0.14)
+            PressedFill: =RGBA(0, 40, 38, 0.24)
+            DisabledFill: =RGBA(0, 0, 0, 0)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =10
+            RadiusTopRight: =10
+            RadiusBottomLeft: =10
+            RadiusBottomRight: =10
+            OnSelect: |-
+              =Set(varDataIni, varDataIniTmp);
+              Set(varDataFim, Coalesce(varDataFimTmp, varDataIniTmp));
+              Set(varDataAberto, false);
+              Select(btnDataOnChange)
