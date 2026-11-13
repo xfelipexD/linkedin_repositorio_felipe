@@ -1,0 +1,247 @@
+# ─────────────────────────────────────────────────────────────
+#  Campo de texto com sugestões · Power Apps Canvas
+#  Cole, funciona, troque a fonte em uma linha
+#  Ignora acentos · destaca o trecho digitado · aceita texto livre
+#  Sem PCF · sem licença premium
+#
+#  Como usar:
+#  1. Copie este bloco inteiro
+#  2. No Power Apps Studio, clique com o botão direito na tela > Colar
+#  3. Leve conProdutoSugestoes para o topo da árvore
+#     (Reordenar > Trazer para frente)
+#  4. O valor do campo é:  txtProduto.Text
+#  5. Para usar seus dados, troque a linha "fonte:" no Items de
+#     galProdutoSugestoes (precisa de uma coluna Nome)
+# ─────────────────────────────────────────────────────────────
+- conProduto:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =40
+      Y: =40
+      Width: =340
+      Height: =96
+      Fill: =RGBA(0, 0, 0, 0)
+      BorderThickness: =0
+      DropShadow: =DropShadow.None
+    Children:
+      - imgProduto:
+          Control: Image@2.2.3
+          Properties:
+            X: =0
+            Y: =0
+            Width: =340
+            Height: =96
+            ImagePosition: =ImagePosition.Fit
+            Image: |-
+              =With(
+                  {temTexto: Len(txtProduto.Text) > 0},
+                  "data:image/svg+xml;utf8," & EncodeUrl(
+                      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 96' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                      "<text x='2' y='12' font-size='10' font-weight='700' letter-spacing='.8' fill='#77787B'>PRODUTO</text>" &
+                      "<rect x='0.5' y='20.5' width='339' height='47' rx='10' fill='#FFFFFF'/>" &
+                      "<g fill='none' stroke='#00807C' stroke-width='1.7' stroke-linecap='round'><circle cx='24.5' cy='42.5' r='6.5'/><path d='M29.5 47.5 L33.5 51.5'/></g>" &
+                      If(temTexto, "<circle cx='316' cy='44' r='9' fill='#EEF1F1'/><path d='M313 41 L319 47 M319 41 L313 47' stroke='#5F6767' stroke-width='1.6' stroke-linecap='round'/>", "") &
+                      "<text x='2' y='87' font-size='12' fill='#5F6767'>Comece a digitar para ver sugestões</text>" &
+                      "</svg>"
+                  )
+              )
+      - txtProduto:
+          Control: Classic/TextInput@2.3.2
+          Properties:
+            X: =0
+            Y: =20
+            Width: =340
+            Height: =48
+            Default: =varProduto
+            HintText: ="Digite um produto"
+            Font: =Font.'Segoe UI'
+            Size: =11
+            Color: =RGBA(31, 42, 42, 1)
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 0, 0, 0)
+            PaddingLeft: =46
+            PaddingRight: =44
+            BorderThickness: =1
+            FocusedBorderThickness: =1
+            BorderColor: =RGBA(213, 219, 219, 1)
+            HoverBorderColor: =RGBA(160, 172, 172, 1)
+            FocusedBorderColor: =RGBA(0, 128, 124, 1)
+            RadiusTopLeft: =10
+            RadiusTopRight: =10
+            RadiusBottomLeft: =10
+            RadiusBottomRight: =10
+      - btnProdutoLimpar:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Limpar"
+            X: =300
+            Y: =28
+            Width: =32
+            Height: =32
+            Visible: =Len(txtProduto.Text) > 0
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 128, 124, 0.08)
+            PressedFill: =RGBA(0, 128, 124, 0.16)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =16
+            RadiusTopRight: =16
+            RadiusBottomLeft: =16
+            RadiusBottomRight: =16
+            OnSelect: |-
+              =Set(varProduto, "");
+              Set(varProdutoFechado, "");
+              Reset(txtProduto)
+
+- conProdutoSugestoes:
+    Control: GroupContainer@1.3.0
+    Variant: ManualLayout
+    Properties:
+      X: =0
+      Y: =0
+      Width: =Parent.Width
+      Height: =Parent.Height
+      Visible: =Len(Trim(txtProduto.Text)) > 0 && txtProduto.Text <> varProduto && txtProduto.Text <> varProdutoFechado
+      Fill: =RGBA(0, 0, 0, 0)
+      BorderThickness: =0
+      DropShadow: =DropShadow.None
+    Children:
+      - btnProdutoFora:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: =""
+            Tooltip: ="Fechar sugestões"
+            X: =0
+            Y: =0
+            Width: =Parent.Width
+            Height: =Parent.Height
+            Fill: =RGBA(0, 0, 0, 0)
+            HoverFill: =RGBA(0, 0, 0, 0)
+            PressedFill: =RGBA(0, 0, 0, 0)
+            BorderThickness: =0
+            BorderColor: =RGBA(0, 0, 0, 0)
+            HoverBorderColor: =RGBA(0, 0, 0, 0)
+            PressedBorderColor: =RGBA(0, 0, 0, 0)
+            FocusedBorderThickness: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            OnSelect: |-
+              =// clique fora: fecha a lista e mantém o texto digitado
+              Set(varProdutoFechado, txtProduto.Text)
+      - imgProdutoCartao:
+          Control: Image@2.2.3
+          Properties:
+            X: =conProduto.X - 8
+            Y: =conProduto.Y + 64
+            Width: =356
+            Height: =Max(1, Min(6, CountRows(galProdutoSugestoes.AllItems))) * 44 + 40
+            ImagePosition: =ImagePosition.Fit
+            Image: |-
+              =With(
+                  {h: Self.Height, n: CountRows(galProdutoSugestoes.AllItems)},
+                  "data:image/svg+xml;utf8," & EncodeUrl(
+                      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 356 " & h & "' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                      "<defs><filter id='sh' x='-10%' y='-10%' width='120%' height='130%'><feDropShadow dx='0' dy='4' stdDeviation='6' flood-color='#0B3B3A' flood-opacity='.12'/></filter></defs>" &
+                      "<rect x='8' y='8' width='340' height='" & (h - 24) & "' rx='12' fill='#FFFFFF' stroke='#E3E8E8' filter='url(#sh)'/>" &
+                      If(n = 0, "<text x='24' y='42' font-size='13' fill='#5F6767'>Nenhuma sugestão. O texto digitado será mantido.</text>", "") &
+                      "</svg>"
+                  )
+              )
+      - galProdutoSugestoes:
+          Control: Gallery@2.15.0
+          Variant: Vertical
+          Properties:
+            X: =imgProdutoCartao.X + 8
+            Y: =imgProdutoCartao.Y + 16
+            Width: =340
+            Height: =imgProdutoCartao.Height - 40
+            WrapCount: =1
+            TemplateSize: =44
+            TemplatePadding: =0
+            ShowScrollbar: =true
+            ShowNavigation: =false
+            BorderThickness: =0
+            Fill: =RGBA(0, 0, 0, 0)
+            TemplateFill: =RGBA(0, 0, 0, 0)
+            Items: |-
+              =With(
+                  {
+                      q: Concat(Split(Lower(Trim(txtProduto.Text)), ""), If(IsBlank(Find(Value, "áàâãäéèêëíìîïóòôõöúùûüç")), Value, Mid("aaaaaeeeeiiiiooooouuuuc", Find(Value, "áàâãäéèêëíìîïóòôõöúùûüç"), 1))),
+                      // ════════ FONTE DE DADOS: troque só esta linha ════════
+                      // Precisa de uma coluna chamada Nome. Exemplos:
+                      //   fonte: colProdutos
+                      //   fonte: RenameColumns(Produtos, Title, Nome)      (lista do SharePoint)
+                      fonte: Table(
+                          {Nome: "Notebook 14 polegadas"},
+                          {Nome: "Mouse sem fio"},
+                          {Nome: "Teclado ABNT2"},
+                          {Nome: "Monitor 24 polegadas"},
+                          {Nome: "Headset com microfone"},
+                          {Nome: "Webcam Full HD"},
+                          {Nome: "Cadeira de escritório"},
+                          {Nome: "Mesa de reunião"},
+                          {Nome: "Projetor multimídia"},
+                          {Nome: "Impressora multifuncional"}
+                      )
+                  },
+                  Sort(Filter(fonte, q in Concat(Split(Lower(Nome), ""), If(IsBlank(Find(Value, "áàâãäéèêëíìîïóòôõöúùûüç")), Value, Mid("aaaaaeeeeiiiiooooouuuuc", Find(Value, "áàâãäéèêëíìîïóòôõöúùûüç"), 1)))), Nome)
+              )
+          Children:
+            - imgProdutoSugestao:
+                Control: Image@2.2.3
+                Properties:
+                  X: =0
+                  Y: =0
+                  Width: =340
+                  Height: =44
+                  ImagePosition: =ImagePosition.Fit
+                  Image: |-
+                    =With(
+                        {q: Concat(Split(Lower(Trim(txtProduto.Text)), ""), If(IsBlank(Find(Value, "áàâãäéèêëíìîïóòôõöúùûüç")), Value, Mid("aaaaaeeeeiiiiooooouuuuc", Find(Value, "áàâãäéèêëíìîïóòôõöúùûüç"), 1))), nome: ThisItem.Nome},
+                        With(
+                            {pos: Find(q, Concat(Split(Lower(nome), ""), If(IsBlank(Find(Value, "áàâãäéèêëíìîïóòôõöúùûüç")), Value, Mid("aaaaaeeeeiiiiooooouuuuc", Find(Value, "áàâãäéèêëíìîïóòôõöúùûüç"), 1))))},
+                            "data:image/svg+xml;utf8," & EncodeUrl(
+                                "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 44' font-family='Segoe UI, Inter, Arial, sans-serif'>" &
+                                "<rect x='14' y='10' width='24' height='24' rx='7' fill='#E6F2F2'/>" &
+                                "<g fill='none' stroke='#00807C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 18.5 L26 15.5 L32 18.5 L32 25.5 L26 28.5 L20 25.5 Z'/><path d='M20 18.5 L26 21.5 L32 18.5 M26 21.5 V28.5'/></g>" &
+                                "<text x='52' y='27' font-size='14' fill='#1F2A2A'>" &
+                                    If(
+                                        IsBlank(pos) || q = "",
+                                        Substitute(Substitute(nome, "&", "&amp;"), "<", "&lt;"),
+                                        Substitute(Substitute(Left(nome, pos - 1), "&", "&amp;"), "<", "&lt;") & "<tspan font-weight='700' fill='#00807C'>" & Substitute(Substitute(Mid(nome, pos, Len(q)), "&", "&amp;"), "<", "&lt;") & "</tspan>" & Substitute(Substitute(Mid(nome, pos + Len(q)), "&", "&amp;"), "<", "&lt;")
+                                    ) & "</text>" &
+                                "</svg>"
+                            )
+                        )
+                    )
+            - btnProdutoSugestao:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: =""
+                  Tooltip: ="Usar esta sugestão"
+                  X: =6
+                  Y: =2
+                  Width: =328
+                  Height: =40
+                  Fill: =RGBA(0, 0, 0, 0)
+                  HoverFill: =RGBA(0, 128, 124, 0.06)
+                  PressedFill: =RGBA(0, 128, 124, 0.12)
+                  BorderThickness: =0
+                  BorderColor: =RGBA(0, 0, 0, 0)
+                  HoverBorderColor: =RGBA(0, 0, 0, 0)
+                  PressedBorderColor: =RGBA(0, 0, 0, 0)
+                  FocusedBorderThickness: =0
+                  RadiusTopLeft: =10
+                  RadiusTopRight: =10
+                  RadiusBottomLeft: =10
+                  RadiusBottomRight: =10
+                  OnSelect: |-
+                    =Set(varProduto, ThisItem.Nome);
+                    Reset(txtProduto)
